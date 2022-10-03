@@ -1,7 +1,10 @@
 package com.nikitazamyslov.avito_tech_trainee_test_android
 
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -14,13 +17,27 @@ class MainViewModel : ViewModel() {
         _data.update { _ ->
             (1..15).map { Item() }
         }
+        start()
     }
 
     fun deleteItem(item: Item) {
         _data.update { list ->
-            val newList = list.toMutableList()
-            newList.remove(item)
-            newList
+            list.toMutableList().apply { remove(item) }
+        }
+    }
+
+    private fun addRandomItem() {
+        _data.update { list ->
+            list.toMutableList().apply { add((0..size).random(), Item()) }
+        }
+    }
+
+    private fun start() {
+        viewModelScope.launch {
+            while (true) {
+                addRandomItem()
+                delay(5000)
+            }
         }
     }
 }
