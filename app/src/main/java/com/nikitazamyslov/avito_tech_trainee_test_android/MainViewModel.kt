@@ -7,11 +7,14 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.*
 
 class MainViewModel : ViewModel() {
 
     private var _data: MutableStateFlow<List<Item>> = MutableStateFlow(listOf())
     val data get() = _data
+
+    private val itemDeletedPool: Queue<Item> = LinkedList()
 
     init {
         _data.update { _ ->
@@ -22,13 +25,17 @@ class MainViewModel : ViewModel() {
 
     fun deleteItem(item: Item) {
         _data.update { list ->
-            list.toMutableList().apply { remove(item) }
+            list.toMutableList().apply {
+                itemDeletedPool.add(item)
+                remove(item)
+            }
         }
     }
 
     private fun addRandomItem() {
         _data.update { list ->
-            list.toMutableList().apply { add((0..size).random(), Item()) }
+            val item = itemDeletedPool.poll() ?: Item()
+            list.toMutableList().apply { add((0..size).random(), item) }
         }
     }
 
